@@ -6,20 +6,19 @@
     <title>Juego de Disparos</title>
     <style>
         body {
-            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
             overflow: hidden;
-            background: black;
+            background: rgb(0, 0, 0);
         }
         canvas {
-            display: block;
-            background: url('space-bg.jpg') no-repeat center center;
+            
             background-size: cover;
+            background-color: rgb(71, 71, 71);
         }
-        border{
-            margin: top 15;
-            margin: bottom 15%;
-        }
-
     </style>
 </head>
 <body>
@@ -27,15 +26,24 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        
+        // Set canvas size to be 75% of the viewport height to leave 25% for the border at the top
+        canvas.width = window.innerWidth * 0.25;
+        canvas.height = window.innerHeight * 1;
+
+        const gameArea = {
+            x: 0,
+            y: 0,
+            width: canvas.width,
+            height: canvas.height
+        };
 
         class Spaceship {
             constructor() {
                 this.width = 50;
                 this.height = 50;
-                this.x = canvas.width / 2 - this.width / 2;
-                this.y = canvas.height - this.height - 10;
+                this.x = gameArea.width / 2 - this.width / 2; // Center horizontally in the game area
+                this.y = gameArea.height - this.height - 15; // Start near the bottom border of the game area
                 this.speed = 10;
                 this.lasers = [];
             }
@@ -46,13 +54,13 @@
             }
 
             moveLeft() {
-                if (this.x > 0) {
+                if (this.x > gameArea.x) {
                     this.x -= this.speed;
                 }
             }
 
             moveRight() {
-                if (this.x + this.width < canvas.width) {
+                if (this.x + this.width < gameArea.x + gameArea.width) {
                     this.x += this.speed;
                 }
             }
@@ -65,7 +73,7 @@
                 this.lasers.forEach((laser, index) => {
                     laser.move();
                     laser.draw();
-                    if (laser.y < 0) {
+                    if (laser.y < gameArea.y) {
                         this.lasers.splice(index, 1);
                     }
                 });
@@ -90,14 +98,14 @@
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         }
-class border{
+
         class Enemy {
             constructor(x, y) {
                 this.width = 50;
                 this.height = 50;
                 this.x = x;
                 this.y = y;
-                this.speed = 0.5;
+                this.speed = 1; // Move downwards
             }
 
             move() {
@@ -105,7 +113,7 @@ class border{
             }
 
             draw() {
-                ctx.fillStyle = 'green';
+                ctx.fillStyle = 'black';
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         }
@@ -114,8 +122,8 @@ class border{
         const enemies = [];
 
         function spawnEnemy() {
-            const x = Math.random() * (canvas.width - 50);
-            const y = -50;
+            const x = Math.random() * (gameArea.width - 50); // Spawn randomly along the top within the game area
+            const y = -50; // Spawn just above the game area
             enemies.push(new Enemy(x, y));
         }
 
@@ -136,7 +144,7 @@ class border{
                 });
 
                 // Game Over condition
-                if (enemy.y + enemy.height > canvas.height) {
+                if (enemy.y + enemy.height > gameArea.height) {
                     alert('Game Over!');
                     window.location.reload();
                 }
@@ -145,6 +153,12 @@ class border{
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the border at the top
+            ctx.strokeStyle = 'red';
+        
+            ctx.lineWidth = 5;
+            ctx.strokeRect(gameArea.x, gameArea.y, gameArea.width, canvas.height * 0.25);
 
             spaceship.draw();
             spaceship.updateLasers();
@@ -165,7 +179,6 @@ class border{
 
         setInterval(spawnEnemy, 1000);
         gameLoop();
-}
     </script>
 </body>
 </html>
