@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Disparos</title>
+    <style>
+        body {
+            
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            display: block;
+            background: url('space-bg.jpg') no-repeat center center;
+            background-size: cover;
+        }
+        border{
+            margin: top 15;
+            margin: bottom 15%;
+        }
+
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Spaceship {
+            constructor() {
+                this.width = 50;
+                this.height = 50;
+                this.x = canvas.width / 2 - this.width / 2;
+                this.y = canvas.height - this.height - 10;
+                this.speed = 10;
+                this.lasers = [];
+            }
+
+            draw() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+
+            moveLeft() {
+                if (this.x > 0) {
+                    this.x -= this.speed;
+                }
+            }
+
+            moveRight() {
+                if (this.x + this.width < canvas.width) {
+                    this.x += this.speed;
+                }
+            }
+
+            shoot() {
+                this.lasers.push(new Laser(this.x + this.width / 2, this.y));
+            }
+
+            updateLasers() {
+                this.lasers.forEach((laser, index) => {
+                    laser.move();
+                    laser.draw();
+                    if (laser.y < 0) {
+                        this.lasers.splice(index, 1);
+                    }
+                });
+            }
+        }
+
+        class Laser {
+            constructor(x, y) {
+                this.width = 5;
+                this.height = 20;
+                this.x = x - this.width / 2;
+                this.y = y;
+                this.speed = 7;
+            }
+
+            move() {
+                this.y -= this.speed;
+            }
+
+            draw() {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+class border{
+        class Enemy {
+            constructor(x, y) {
+                this.width = 50;
+                this.height = 50;
+                this.x = x;
+                this.y = y;
+                this.speed = 0.5;
+            }
+
+            move() {
+                this.y += this.speed;
+            }
+
+            draw() {
+                ctx.fillStyle = 'green';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        const spaceship = new Spaceship();
+        const enemies = [];
+
+        function spawnEnemy() {
+            const x = Math.random() * (canvas.width - 50);
+            const y = -50;
+            enemies.push(new Enemy(x, y));
+        }
+
+        function updateEnemies() {
+            enemies.forEach((enemy, index) => {
+                enemy.move();
+                enemy.draw();
+
+                // Check for collision with lasers
+                spaceship.lasers.forEach((laser, laserIndex) => {
+                    if (laser.x < enemy.x + enemy.width &&
+                        laser.x + laser.width > enemy.x &&
+                        laser.y < enemy.y + enemy.height &&
+                        laser.y + laser.height > enemy.y) {
+                        enemies.splice(index, 1);
+                        spaceship.lasers.splice(laserIndex, 1);
+                    }
+                });
+
+                // Game Over condition
+                if (enemy.y + enemy.height > canvas.height) {
+                    alert('Game Over!');
+                    window.location.reload();
+                }
+            });
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            spaceship.draw();
+            spaceship.updateLasers();
+            updateEnemies();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                spaceship.moveLeft();
+            } else if (event.key === 'ArrowRight') {
+                spaceship.moveRight();
+            } else if (event.key === ' ') {
+                spaceship.shoot();
+            }
+        });
+
+        setInterval(spawnEnemy, 1000);
+        gameLoop();
+}
+    </script>
+</body>
+</html>
